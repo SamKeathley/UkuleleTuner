@@ -2,17 +2,45 @@ const modelUrl = 'https://cdn.jsdelivr.net/gh/ml5js/ml5-data-and-models/models/p
 let pitch;
 let audioContext;
 let mic;
+let freq = 0;
 
 function setup() {
-    audioContext = new AudioContext();
+    createCanvas(400, 400)
+    audioContext = getAudioContext();
+    mic = new p5.AudioIn();
+    mic.start(listening);
+}
+
+function listening() {
+    console.log('listening');
     pitch = ml5.pitchDetection(
         modelUrl,
         audioContext,
-        MicStream,
+        mic.stream,
         modelLoaded
     );
 }
 
+function gotPitch(err, frequency) {
+    if (err) {
+        console.log(err);
+    } else {
+        if (frequency) {
+            freq = frequency;
+        }
+    }
+    pitch.getPitch(gotPitch);
+}
+
 function modelLoaded() {
     console.log('Model has been loaded');
+    pitch.getPitch(gotPitch);
+}
+
+function draw() {
+    background(0);
+    textAlign(CENTER, CENTER);
+    fill(255);
+    textSize(64)
+    text(freq.toFixed(2), width / 2, height / 2);
 }
